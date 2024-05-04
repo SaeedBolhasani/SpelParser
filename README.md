@@ -11,7 +11,7 @@ Welcome to the **SpelCompiler**! This library aims to provide .NET developers wi
 Here’s a basic example of how to use the library:
 
 C#
-
+```
 using SpelCompiler;
 
 // Create an instance of the compiler
@@ -22,3 +22,4 @@ var compiledExpression = compiler.CreateFunc("age > 45");
 
 // Execute the compiled expression
 var result = _models.Where(compiledExpression.Compile()).ToArray();
+```
