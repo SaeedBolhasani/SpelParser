@@ -4,6 +4,7 @@ using SpelParser.Generated;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 using static SpelParser.Generated.SpelGrammerParser;
 
 namespace SpelParser;
@@ -12,19 +13,21 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
 {
     private static readonly ParameterExpression _param = Expression.Parameter(typeof(T), "p");
 
+    private static string GetString(ConstantContext context) => context.GetText().Trim('"', '\'');
+
     public override Expression VisitString([NotNull] StringContext context)
     {
-        return Expression.Constant(context.GetText().Trim('\'', '"'), typeof(string));
+        return Expression.Constant(GetString(context), typeof(string));
     }
 
     public override Expression VisitNumber([NotNull] NumberContext context)
     {
-        return Expression.Constant(context.GetText().Trim('\'', '"'));
+        return Expression.Constant(GetString(context));
     }
 
     public override Expression VisitConstant([NotNull] ConstantContext context)
     {
-        return base.VisitConstant(context);
+        return base.Visit(context);
     }
 
     public override Expression VisitField([NotNull] FieldContext context)
@@ -86,7 +89,21 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
         var fieldExpression = VisitField(fieldContext);
         var fieldType = fieldExpression.Type;
 
-        return Expression.Call(fieldExpression, fieldType.GetMethod("CompareTo", [fieldType])!, CreateValueExpression(fieldType, constantContext));
+        Expression constantExpression;
+        if (fieldType.BaseType == typeof(Enum))
+        {
+            var underlyingType = Enum.GetUnderlyingType(fieldType);
+            var constant = Convert.ChangeType(Enum.Parse(fieldType, GetString(constantContext), true), underlyingType);
+            fieldExpression = Expression.Convert(fieldExpression, underlyingType);
+            fieldType = underlyingType;
+            constantExpression = Expression.Constant(constant);           
+        }
+        else
+        {
+            constantExpression = CreateValueExpression(fieldType, constantContext);
+        }
+
+        return Expression.Call(fieldExpression, fieldType.GetMethod("CompareTo", [fieldType])!, constantExpression);
     }
 
     private Expression CreateValueExpression(Type fieldExpression, ConstantContext constantContext)

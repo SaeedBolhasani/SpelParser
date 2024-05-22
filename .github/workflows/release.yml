@@ -1,23 +1,36 @@
-name: Release to NuGet
-
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - "**"
+    
+  pull_request:
+    branches:
+      - "**"
+env:
+  VERSION: 1.0.0
+
+defaults:
+  run:
+    working-directory: src
     
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v1
+    - uses: actions/checkout@v3
+    - name: Set Version Variable     
+      TAG: ${{ github.ref_name }}
+      run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+   
+    - name: Restore dependencies
+      run: dotnet restore
     - name: Build
-      run: dotnet build -c Release
+      run: dotnet build --no-restore /p:Version=$VERSION
     - name: Test
-      run: dotnet test -c Release --no-build
-    - name: Pack nugets
-      run: dotnet pack -c Release --no-build --output .
-    - name: Push to NuGet
-      run: dotnet nuget push "*.nupkg" --api-key ${{secrets.nuget_api_key}} --source https://api.nuget.org/v3/index.json
+      run: dotnet test --no-build --verbosity normal
+    - name: pack nuget packages
+      run: dotnet pack --output nupkgs --no-restore --no-build /p:PackageVersion=$VERSION
+    - name: upload nuget package
+      run: dotnet nuget push nupkgs/*.nupkg -k ${{ secrets.nuget_api_key }} -s https://api.nuget.org/v3/index.json
