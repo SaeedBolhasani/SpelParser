@@ -2,7 +2,13 @@ using FluentAssertions;
 
 namespace SpelParser.UnitTests;
 
-public class TestModel
+public enum EmployeeType : byte
+{
+    Manager = 1,
+    Employee = 2
+}
+
+public class EmployeeModel
 {
     public int Age { get; set; }
     public string Name { get; set; }
@@ -11,6 +17,7 @@ public class TestModel
     public TimeOnly BedTime { get; set; }
     public TimeSpan WorkingDuration { get; set; }
     public decimal AccountBalance { get; set; }
+    public EmployeeType EmployeeType { get; set; }
 }
 
 public class SpelGrammerCompilerUnitTests
@@ -21,8 +28,8 @@ public class SpelGrammerCompilerUnitTests
     {
         const int age = 45;
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
-       
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
+
 
         var input = $"age > {age} ";
         var query = compiler.CreateFunc(input);
@@ -37,7 +44,7 @@ public class SpelGrammerCompilerUnitTests
     {
         const int age = 50;
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"age >= {age} ";
         var query = compiler.CreateFunc(input);
@@ -52,8 +59,8 @@ public class SpelGrammerCompilerUnitTests
     {
         const int accountBalance = 200;
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
-        
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
+
         var input = $"accountBalance < {accountBalance} ";
         var query = compiler.CreateFunc(input);
 
@@ -68,7 +75,7 @@ public class SpelGrammerCompilerUnitTests
     {
         const int accountBalance = 200;
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"accountBalance <= {accountBalance} ";
         var query = compiler.CreateFunc(input);
@@ -84,7 +91,7 @@ public class SpelGrammerCompilerUnitTests
     {
         const string name = "Ali";
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"name == '{name}' ";
         var query = compiler.CreateFunc(input);
@@ -100,7 +107,7 @@ public class SpelGrammerCompilerUnitTests
     {
         const string name = "Ali";
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"name != '{name}' ";
         var query = compiler.CreateFunc(input);
@@ -117,7 +124,7 @@ public class SpelGrammerCompilerUnitTests
         const string name = "Ali";
         const int age = 50;
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"name == '{name}' and age >= {age}";
         var query = compiler.CreateFunc(input);
@@ -135,7 +142,7 @@ public class SpelGrammerCompilerUnitTests
         const string name = "Ali";
         const int age = 20;
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"name == '{name}' or age >= {age}";
         var query = compiler.CreateFunc(input);
@@ -154,7 +161,7 @@ public class SpelGrammerCompilerUnitTests
         const int age = 20;
         const double accountBalance = 100;
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"((name == '{name}' or age == {age}) and accountBalance > {accountBalance})";
         var query = compiler.CreateFunc(input);
@@ -169,7 +176,7 @@ public class SpelGrammerCompilerUnitTests
     {
         var registerDateTime = DateTime.Now.AddSeconds(-1);
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"registerDateTime > '{registerDateTime}' ";
         var query = compiler.CreateFunc(input);
@@ -185,7 +192,7 @@ public class SpelGrammerCompilerUnitTests
     {
         var birthDate = DateOnly.Parse("2000-1-1");
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"birthDate > '{birthDate}' ";
         var query = compiler.CreateFunc(input);
@@ -201,7 +208,7 @@ public class SpelGrammerCompilerUnitTests
     {
         var bedTime = TimeOnly.Parse("19:00");
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"bedTime >= '{bedTime}' ";
         var query = compiler.CreateFunc(input);
@@ -217,7 +224,7 @@ public class SpelGrammerCompilerUnitTests
     {
         var workingDuration = TimeSpan.Parse("8:00:00");
 
-        var compiler = new SpelGrammerCompiler<TestModel>();
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
 
         var input = $"workingDuration == '{workingDuration}' ";
         var query = compiler.CreateFunc(input);
@@ -228,9 +235,25 @@ public class SpelGrammerCompilerUnitTests
         result.Should().HaveCount(2);
     }
 
-    private readonly TestModel[] _models =
+    [Fact]
+    public void CreateFunc_QueryWithEnum_ResultSetShouldBeContainOnlyEligibleItems()
+    {
+        var employeeType = EmployeeType.Manager;
+
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
+
+        var input = $"employeeType == '{employeeType}' ";
+        var query = compiler.CreateFunc(input);
+
+        var result = _models.Where(query.Compile()).ToArray();
+
+        result.Should().AllSatisfy(i => i.EmployeeType.Should().Be(employeeType));
+        result.Should().HaveCount(1);
+    }
+
+    private readonly EmployeeModel[] _models =
      [
-         new TestModel
+         new EmployeeModel
          {
              Age = 50,
              AccountBalance = 100,
@@ -239,8 +262,9 @@ public class SpelGrammerCompilerUnitTests
              Name = "Ali",
              BedTime = TimeOnly.Parse("19:00"),
              WorkingDuration = TimeSpan.FromHours(8),
+             EmployeeType = EmployeeType.Employee
          },
-         new TestModel
+         new EmployeeModel
          {
              Age = 20,
              AccountBalance = 200,
@@ -249,6 +273,7 @@ public class SpelGrammerCompilerUnitTests
              Name = "Saeed",
              BedTime = TimeOnly.Parse("21:00"),
              WorkingDuration = TimeSpan.FromHours(8),
+             EmployeeType = EmployeeType.Manager
          }
       ];
 
