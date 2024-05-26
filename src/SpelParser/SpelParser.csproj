@@ -26,6 +26,9 @@
 		<Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Antlr4" Version="4.6.6">
