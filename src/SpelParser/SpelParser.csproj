@@ -3,9 +3,9 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<PackageVersion>1.0.1</PackageVersion>
+		<PackageVersion>1.0.101</PackageVersion>
 		<PackageId>SpelParser</PackageId>
-		<Version>1.0.1</Version>
+		<Version>1.0.101</Version>
 		<Authors>Saeed Bolhasani</Authors>
 		<PackageDescription>Convert string to expression</PackageDescription>
 		<RepositoryUrl>https://github.com/SaeedBolhasani/SpelParser</RepositoryUrl>
@@ -24,10 +24,14 @@
 
 	<PropertyGroup>
 		<Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
+		<PackageProjectUrl>https://github.com/SaeedBolhasani/SpelParser</PackageProjectUrl>
+		<Title>Spel Parser</Title>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md" Pack="true" PackagePath="\"/>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
