@@ -96,14 +96,14 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
             var constant = Convert.ChangeType(Enum.Parse(fieldType, GetString(constantContext), true), underlyingType);
             fieldExpression = Expression.Convert(fieldExpression, underlyingType);
             fieldType = underlyingType;
-            constantExpression = Expression.Constant(constant);           
+            constantExpression = Expression.Constant(constant);
         }
         else
         {
             constantExpression = CreateValueExpression(fieldType, constantContext);
         }
 
-        return Expression.Call(fieldExpression, fieldType.GetMethod("CompareTo", [fieldType])!, constantExpression);
+        return Expression.Call(fieldExpression, fieldType.GetMethod(nameof(IComparable.CompareTo), [fieldType])!, constantExpression);
     }
 
     private Expression CreateValueExpression(Type fieldExpression, ConstantContext constantContext)
@@ -113,10 +113,9 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
         if (fieldExpression == typeof(string))
             return constantExpression;
 
-        if (fieldExpression.GetMethod("Parse", [typeof(string)]) != null)
-            return Expression.Call(fieldExpression, "Parse", Type.EmptyTypes, constantExpression);
+        var methodCallExpression = fieldExpression.GetMethod("Parse", [typeof(string)]) ?? throw new ArgumentException("Unknown type", fieldExpression.ToString());
 
-        throw new ArgumentException("Unknown type", fieldExpression.ToString());
+        return Expression.Call(methodCallExpression, constantExpression);
     }
 
     public Expression<Func<T, bool>> CreateFunc(string input)
