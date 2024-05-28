@@ -81,7 +81,7 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
 
     public override Expression VisitLessThanOrEqualExpression([NotNull] LessThanOrEqualExpressionContext context)
     {
-        return Expression.LessThan(CreateCallCompareToMethodExpression(context.field(), context.constant()), Expression.Constant(0));
+        return Expression.LessThanOrEqual(CreateCallCompareToMethodExpression(context.field(), context.constant()), Expression.Constant(0));
     }
 
     private MethodCallExpression CreateCallCompareToMethodExpression(FieldContext fieldContext, ConstantContext constantContext)

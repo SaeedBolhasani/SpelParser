@@ -83,7 +83,7 @@ public class SpelGrammerCompilerUnitTests
         var result = _models.Where(query.Compile()).ToArray();
 
         result.Should().AllSatisfy(i => i.AccountBalance.Should().BeLessThanOrEqualTo(accountBalance));
-        result.Should().HaveCount(1);
+        result.Should().HaveCount(2);
     }
 
     [Fact]
