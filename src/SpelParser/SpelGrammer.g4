@@ -20,7 +20,9 @@ comparision
 | Field=field Operator='!='	Constant=constant #NotEqualExpression
 ;
 
-field : FIELD;
+field : FIELD'.'FIELD # NestedPropertyExpression
+| FIELD # FieldExpression
+;
 
 constant
 : STRING #String

@@ -6,7 +6,7 @@ Welcome to the **SpelCompiler**! This library aims to provide .NET developers wi
 
 - Compile 'where' expressions from SpEL to .NET
 - Execute compiled expressions in a .NET environment
-
+- Support nested property
 Usage
 Here’s a basic example of how to use the library:
 

@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
+using Antlr4.Runtime.Tree;
 using SpelParser.Generated;
 using System;
 using System.Linq.Expressions;
@@ -14,6 +15,15 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
     private static readonly ParameterExpression _param = Expression.Parameter(typeof(T), "p");
 
     private static string GetString(ConstantContext context) => context.GetText().Trim('"', '\'');
+
+    private static Expression CreateFieldExpression(ITerminalNode token)
+    {
+        var fieldNameToken = token.GetText();
+        var fieldExpression = typeof(T).GetProperty(fieldNameToken, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)!;
+
+        ArgumentNullException.ThrowIfNull(fieldExpression, fieldNameToken);
+        return Expression.Property(_param, fieldExpression.Name);
+    }
 
     public override Expression VisitString([NotNull] StringContext context)
     {
@@ -32,11 +42,21 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
 
     public override Expression VisitField([NotNull] FieldContext context)
     {
-        var fieldNameToken = context.FIELD().GetText();
-        var fieldExpression = typeof(T).GetProperty(fieldNameToken, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)!;
+        return base.Visit(context);       
+    }
+    public override Expression VisitErrorNode([NotNull] IErrorNode node)
+    {
+        node.GetText();
+        return base.VisitErrorNode(node);
+    }
+    public override Expression VisitNestedPropertyExpression([NotNull] NestedPropertyExpressionContext context)
+    {
+        return Expression.PropertyOrField(CreateFieldExpression(context.FIELD(0)), context.FIELD(1).GetText());
+    }
 
-        ArgumentNullException.ThrowIfNull(fieldExpression, fieldNameToken);
-        return Expression.Property(_param, fieldExpression.Name);
+    public override Expression VisitFieldExpression([NotNull] FieldExpressionContext context)
+    {
+        return CreateFieldExpression(context.FIELD());
     }
 
     public override Expression VisitAnd([NotNull] AndContext context)

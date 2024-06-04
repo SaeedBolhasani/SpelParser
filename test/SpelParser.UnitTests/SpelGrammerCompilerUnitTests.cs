@@ -8,6 +8,11 @@ public enum EmployeeType : byte
     Employee = 2
 }
 
+public class Address
+{
+    public string City { get;set; }
+    public string PostalCode { get;set; }
+}
 public class EmployeeModel
 {
     public int Age { get; set; }
@@ -18,6 +23,7 @@ public class EmployeeModel
     public TimeSpan WorkingDuration { get; set; }
     public decimal AccountBalance { get; set; }
     public EmployeeType EmployeeType { get; set; }
+    public Address Address { get; set; }
 }
 
 public class SpelGrammerCompilerUnitTests
@@ -251,6 +257,22 @@ public class SpelGrammerCompilerUnitTests
         result.Should().HaveCount(1);
     }
 
+    [Fact]
+    public void CreateFunc_QueryWithNestedProperty_ResultSetShouldBeContainOnlyEligibleItems()
+    {
+        var postalCode = "1";
+
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
+
+        var input = $"address.postalCode == '{postalCode}' ";
+        var query = compiler.CreateFunc(input);
+
+        var result = _models.Where(query.Compile()).ToArray();
+
+        result.Should().AllSatisfy(i => i.Address.PostalCode.Should().Be(postalCode));
+        result.Should().HaveCount(1);
+    }
+
     private readonly EmployeeModel[] _models =
      [
          new EmployeeModel
@@ -262,7 +284,12 @@ public class SpelGrammerCompilerUnitTests
              Name = "Ali",
              BedTime = TimeOnly.Parse("19:00"),
              WorkingDuration = TimeSpan.FromHours(8),
-             EmployeeType = EmployeeType.Employee
+             EmployeeType = EmployeeType.Employee,
+             Address = new Address
+             {
+                 City = "Tehran",
+                 PostalCode = "1"
+             }
          },
          new EmployeeModel
          {
@@ -273,7 +300,12 @@ public class SpelGrammerCompilerUnitTests
              Name = "Saeed",
              BedTime = TimeOnly.Parse("21:00"),
              WorkingDuration = TimeSpan.FromHours(8),
-             EmployeeType = EmployeeType.Manager
+             EmployeeType = EmployeeType.Manager,
+             Address = new Address
+             {
+                 City = "New York",
+                 PostalCode = "2"
+             }
          }
       ];
 
