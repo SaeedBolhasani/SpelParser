@@ -8,7 +8,7 @@ Welcome to the **SpelCompiler**! This library aims to provide .NET developers wi
 - Execute compiled expressions in a .NET environment
 - Support nested property
 Usage
-Here’s a basic example of how to use the library:
+- Here’s a basic example of how to use the library:
 
 C#
 ```
@@ -18,7 +18,7 @@ using SpelCompiler;
 var compiler = new SpelGrammerCompiler<TestModel>();
 
 // Compile a 'where' expression
-var compiledExpression = compiler.CreateFunc("age > 45");
+var compiledExpression = compiler.CreateFunc("age > 45 and name ~'ahmed' ");
 
 // Execute the compiled expression
 var result = _models.Where(compiledExpression.Compile()).ToArray();

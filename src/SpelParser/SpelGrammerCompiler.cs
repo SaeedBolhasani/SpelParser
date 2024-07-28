@@ -42,11 +42,10 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
 
     public override Expression VisitField([NotNull] FieldContext context)
     {
-        return base.Visit(context);       
+        return base.Visit(context);
     }
     public override Expression VisitErrorNode([NotNull] IErrorNode node)
     {
-        node.GetText();
         return base.VisitErrorNode(node);
     }
     public override Expression VisitNestedPropertyExpression([NotNull] NestedPropertyExpressionContext context)
@@ -102,6 +101,32 @@ public class SpelGrammerCompiler<T> : SpelGrammerBaseVisitor<Expression>
     public override Expression VisitLessThanOrEqualExpression([NotNull] LessThanOrEqualExpressionContext context)
     {
         return Expression.LessThanOrEqual(CreateCallCompareToMethodExpression(context.field(), context.constant()), Expression.Constant(0));
+    }
+
+    public override Expression VisitLikeExpression([NotNull] LikeExpressionContext context)
+    {
+        var fieldNameToken = context.Field.GetText();
+
+        var fieldPropery = typeof(T).GetProperty(fieldNameToken, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)!;
+
+        if (fieldPropery.PropertyType != typeof(string)) throw new ArgumentNullException($"{fieldNameToken} should be string!");
+
+        var methodCallExpression = fieldPropery.PropertyType.GetMethod(nameof(string.Contains), [typeof(string)]) ?? throw new ArgumentException("Unknown type", fieldPropery.ToString());
+
+        return Expression.Equal(Expression.Call(VisitField(context.field()), methodCallExpression, VisitConstant(context.constant())), Expression.Constant(true));
+    }
+
+    public override Expression VisitNotLikeExpression([NotNull] NotLikeExpressionContext context)
+    {
+        var fieldNameToken = context.Field.GetText();
+
+        var fieldPropery = typeof(T).GetProperty(fieldNameToken, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)!;
+
+        if (fieldPropery.PropertyType != typeof(string)) throw new ArgumentNullException($"{fieldNameToken} should be string!");
+
+        var methodCallExpression = fieldPropery.PropertyType.GetMethod(nameof(string.Contains), [typeof(string)]) ?? throw new ArgumentException("Unknown type", fieldPropery.ToString());
+
+        return Expression.Equal(Expression.Call(VisitField(context.field()), methodCallExpression, VisitConstant(context.constant())), Expression.Constant(false));
     }
 
     private MethodCallExpression CreateCallCompareToMethodExpression(FieldContext fieldContext, ConstantContext constantContext)

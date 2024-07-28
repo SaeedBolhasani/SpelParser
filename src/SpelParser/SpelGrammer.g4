@@ -18,6 +18,8 @@ comparision
 | Field=field Operator='<='	Constant=constant #LessThanOrEqualExpression
 | Field=field Operator='=='	Constant=constant #EqualExpression
 | Field=field Operator='!='	Constant=constant #NotEqualExpression
+| Field=field Operator='~'	Constant=constant #LikeExpression
+| Field=field Operator='!~'	Constant=constant #NotLikeExpression
 ;
 
 field : FIELD'.'FIELD # NestedPropertyExpression

@@ -10,8 +10,8 @@ public enum EmployeeType : byte
 
 public class Address
 {
-    public string City { get;set; }
-    public string PostalCode { get;set; }
+    public string City { get; set; }
+    public string PostalCode { get; set; }
 }
 public class EmployeeModel
 {
@@ -270,6 +270,39 @@ public class SpelGrammerCompilerUnitTests
         var result = _models.Where(query.Compile()).ToArray();
 
         result.Should().AllSatisfy(i => i.Address.PostalCode.Should().Be(postalCode));
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void CreateFunc_QueryWithLike_ResultSetShouldBeContainOnlyEligibleItems()
+    {
+        var name = "li";
+
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
+
+        var input = $"name ~ '{name}'";
+        var query = compiler.CreateFunc(input);
+
+        var result = _models.Where(query.Compile()).ToArray();
+
+        result.Should().AllSatisfy(i => i.Name.Should().Contain(name));
+        result.Should().HaveCount(1);
+
+    }
+
+    [Fact]
+    public void CreateFunc_QueryWithNotLike_ResultSetShouldBeContainOnlyEligibleItems()
+    {
+        var name = "li";
+
+        var compiler = new SpelGrammerCompiler<EmployeeModel>();
+
+        var input = $"name !~ '{name}'";
+        var query = compiler.CreateFunc(input);
+
+        var result = _models.Where(query.Compile()).ToArray();
+
+        result.Should().AllSatisfy(i => i.Name.Should().NotContain(name));
         result.Should().HaveCount(1);
     }
 

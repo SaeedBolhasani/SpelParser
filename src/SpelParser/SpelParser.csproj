@@ -3,9 +3,9 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<PackageVersion>1.1.0</PackageVersion>
+		<PackageVersion>1.2.0</PackageVersion>
 		<PackageId>SpelParser</PackageId>
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 		<Authors>Saeed Bolhasani</Authors>
 		<PackageDescription>Convert string to expression</PackageDescription>
 		<RepositoryUrl>https://github.com/SaeedBolhasani/SpelParser</RepositoryUrl>
